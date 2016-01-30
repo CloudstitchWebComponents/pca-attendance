@@ -6,16 +6,19 @@
     <title>pca-event Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../../polymer/polymer.html">
-    <link rel="import" href="../pca-event-browser.html">
+    <link rel="import" href="../attendance-list-wrapper.html">
 
   </head>
   <body unresolved>
-    <pca-event-browser
-      user="pca",
-      app="event-list",
-      label="sheet",
-      event-workshet="Events"
-      rsvp-worksheet="RSVPs"
-    ></pca-event>
+    <attendance-list-wrapper
+      user="pca"
+      events-app="event-list"
+      events-label="sheet"
+      events-worksheet="Events"
+      rsvps-worksheet="RSVPs"
+      members-app="magic-form"
+      members-label="sheet"
+      members-worksheet="Sheet1"
+    ></attendance-list-wrapper>
   </body>
 </html>

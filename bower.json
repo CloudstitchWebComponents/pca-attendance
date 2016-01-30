@@ -1,5 +1,5 @@
 {
-  "name": "pca-event",
+  "name": "attendance-list",
   "version": "2.0.1",
   "authors": [
     "Ted Benson <ted@cloudstitch.com>"
@@ -13,9 +13,9 @@
     "google-spreadsheet",
     "spreadsheet"
   ],
-  "main": "pca-event.html",
+  "main": "attendance-list.html",
   "license": "BSD",
-  "homepage": "https://github.com/CloudstitchWebComponents/pca-event/",
+  "homepage": "https://github.com/CloudstitchWebComponents/attendance-list/",
   "ignore": [
     "/.*",
     "/test/"
@@ -40,7 +40,9 @@
     "iron-icons": "PolymerElements/iron-icons#~1.1.2",
     "iron-input": "PolymerElements/iron-input#~1.0.8",
     "iron-selector": "PolymerElements/iron-selector#~1.1.0",
-    "cloudstitch-spreadsheet": "~2.0.3"
+    "cloudstitch-spreadsheet": "~2.0.3",
+    "vaadin-grid": "~1.0.0",
+    "vaadin-combo-box": "~1.0.0-alpha4"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page",

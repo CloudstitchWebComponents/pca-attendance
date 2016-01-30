@@ -1,0 +1,245 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<link rel="stylesheet" href="./bootstrap-grid.min.css" />
+<script src="../moment/moment.js"></script>
+
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+
+
+<link rel="import" href="../vaadin-grid/vaadin-grid.html">
+<link rel="import" href="./event-behavior.html">
+
+<!--
+Example:
+
+    <attendance-list></attendance-list>
+
+@group Cloudstitch
+@element attendance-list
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="attendance-list">
+  <template>
+    <style>           
+
+      vaadin-grid::content .rsvp-yes-warning > td {
+        background-color: rgb(255, 238, 191);
+      }
+      vaadin-grid::content .rsvp-yes-success > td {
+        background-color: rgb(219, 255, 191);
+      }      
+      vaadin-grid::content .rsvp-no {
+        color: #777;
+      }
+    </style>    
+        
+    <div class="row">
+      <div class="col-sm-6 col-xs-12">
+        <paper-dropdown-menu label="Select Event" style="width: 100%">
+          <paper-menu id="eventSelector" class="dropdown-content" selected="{{selectedEvent}}">
+            <template is="dom-repeat" items="[[eventNames]]">
+              <paper-item data-id$="{{item.id}}">{{item.date}} {{item.name}}</paper-item>
+            </template>
+          </paper-menu>
+        </paper-dropdown-menu>
+      </div>
+      <div class="col-sm-6 col-xs-12">
+        <paper-input label="Search" value="{{searchString}}">
+        </paper-input>
+      </div>
+    </div>
+    
+
+    <div class="row" hidden$="{{!showTable}}">
+      <vaadin-grid id="table" items="{{rsvps}}">
+        <table>
+          <colgroup>
+            <col name="RSVPStatus">
+            <col name="PersonName">
+            <col name="PersonBusiness">
+            <col name="PersonTitle">          
+            <col name="MembershipRecord"> 
+            <col name="PersonMembershipStatus">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Position</th>
+              <th>Membership Record</th>
+              <th>Member? (Self Reported)</th>
+             </tr>
+          </thead>
+        </table>
+      </vaadin-grid>
+    </div>
+
+  </template>
+
+  <script>
+    
+    function __s(s) {
+      if (typeof s == 'undefined') {
+        return '';
+      } else {
+        return s;
+      }
+    }
+    
+    Polymer({
+
+      is: 'attendance-list',
+           
+      behaviors: [EventBehavior],
+      
+      properties: {               
+        events: {type: Array},
+        allRsvps: {type: Array},
+        searchString: {type: String, value: ''},
+        eventId: {type: String, value: null},
+        showTable: {type: Boolean, computed: 'computeShowTable(eventId)'},
+        members: {type: Array},
+        selectedEvent: {type: Number},
+        precomputedRsvps: {type: Array, computed: 'precomputeRsvps(allRsvps, memberLookup)'},
+        memberLookup: {type: Object, computed: 'buildMemberLookup(members)'},
+        eventNames: {type: Array, computed: 'computeEventNames(events)'},
+        rsvps: {type: Array, computed: 'computeRsvps(allRsvps, eventId, searchString)'}
+      },
+      
+      ready: function() {
+        this.$.table.rowClassGenerator = function(row) {
+          if (row.data.RSVPStatus == 'Not Attending') {
+            return 'rsvp-no';
+          }
+          if (row.data.RSVPStatus == 'Attending') {
+            if (row.data.MembershipStatus == 'Not Found') {
+              return 'rsvp-yes-warning';              
+            } else {
+              return 'rsvp-yes-success';
+            }
+          }                          
+        };
+      },
+      
+      observers: [
+        'eventSelected(selectedEvent)'
+      ],
+      
+      computeShowTable: function(eventId) {
+        return (eventId != null);
+      },
+
+      buildMemberLookup: function(members) {
+        if (!members) {
+          return null;
+        }
+        var ret = {
+          Name: {            
+          },
+          Email: {            
+          }
+        };
+        for (var i = 0; i < members.length; i++) {
+          var m = members[i];
+          var n = __s(m.FirstName) + ' ' + __s(m.LastName);
+          n = n.toLowerCase();
+          var e = __s(m.Email);
+          e = e.toLowerCase();
+          ret.Name[n] = m;
+          ret.Email[n] = m;
+        }          
+        return ret;
+      },
+      
+      eventSelected(e) {
+        this.eventId = this.$.eventSelector.items[e].getAttribute('data-id');        
+      },
+      
+      precomputeRsvps: function(allRsvps, memberLookup) {
+        var ret = [];
+        if (!memberLookup) {
+          return [];
+        }
+        for (var i = 0; i < allRsvps.length; i++) {
+          var r = allRsvps[i];
+          r.PersonName = __s(r.PersonFirstName) + ' ' + __s(r.PersonLastName);
+          // Try to find the person the directory
+          var e = __s(r.PersonEmail).toLowerCase();
+          r.PersonName = __s(r.PersonFirstName) + ' ' + __s(r.PersonLastName);
+          var n = __s(r.PersonName).toLowerCase();
+            
+          var m = null;         
+          if (typeof memberLookup.Email[e] != 'undefined') {
+            m = memberLookup.Email[e];
+          } else if (typeof memberLookup.Name[n] != 'undefined') {
+            m = memberLookup.Name[n];
+          }
+          
+          if (m) {
+            r.MembershipStatus = 'Member';
+            r.MembershipCategory = __s(m.MembershipCategory);
+            r.MembershipSize = __s(m.MembershipSize);
+            r.MembershipRecord = __s(m.MembershipCategory) + '/' + __s(m.MembershipSize);
+          } else {
+            r.MembershipStatus = 'Unknown';
+            r.MembershipCategory = '';
+            r.MembershipSize = '';
+            r.MembershipRecord = 'Not Found';
+          }
+          console.log(r);
+          ret.push(r);
+        }
+        return ret;
+      },
+      
+      computeRsvps: function(precomputedRsvps, eventId, searchString) {
+        var ret = [];
+        if (! searchString) {
+          searchString = '';
+        }
+        searchString = searchString.trim().toLowerCase();
+        for (var i = 0; i < precomputedRsvps.length; i++) {
+          if ((eventId == null) || (precomputedRsvps[i].EventID == eventId)) {
+            if (searchString) {
+              var found = false;
+              for (var key in precomputedRsvps[i]) {
+                if (precomputedRsvps[i][key].toString().toLowerCase().indexOf(searchString) >= 0) {
+                  found = true;
+                  break;
+                }                
+              } 
+              if (found) {
+                ret.push(precomputedRsvps[i]);                            
+              }
+            } else {
+              ret.push(precomputedRsvps[i]);            
+            }        
+          }
+        }
+        return ret;
+      },
+      
+      computeEventNames: function(events) {
+        var ret = [];
+        for (var i = 0; i < events.length; i++) {          
+          if (typeof events[i].EventName != 'undefined') {
+            ret.push({
+              date: events[i].EventDate,
+              name: events[i].EventName,
+              id: events[i].EventID
+            });            
+          }
+        }
+        console.log(ret);
+        return ret;
+      }
+         
+    });
+
+  </script>
+</dom-module>

@@ -1,0 +1,79 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../cloudstitch-spreadsheet/cloudstitch-spreadsheet.html">
+
+<link rel="stylesheet" href="./bootstrap-grid.min.css" />
+<script src="../moment/moment.js"></script>
+
+<link rel="import" href="./attendance-list.html">
+<link rel="import" href="./event-behavior.html">
+
+<!--
+Example:
+
+    <attendance-list-wrapper></attendance-list-wrapper>
+
+@group Cloudstitch
+@element attendance-list
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="attendance-list-wrapper">
+  <template>
+    <style>               
+    </style>    
+    <cloudstitch-spreadsheet user="{{user}}" app="{{eventsApp}}" label="{{eventsLabel}}" projection="items" content="{{eventData}}" auto>
+    </cloudstitch-spreadsheet>
+    <cloudstitch-spreadsheet user="{{user}}" app="{{membersApp}}" label="{{membersLabel}}" projection="items" content="{{memberData}}" auto>
+    </cloudstitch-spreadsheet>
+    <attendance-list events="[[allEvents]]" all-rsvps="[[allRsvps]]" members="[[allMembers]]" event-id="[[eventId]]">
+    </attendance-list>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'attendance-list-wrapper',
+           
+      behaviors: [EventBehavior],
+      
+      properties: {               
+        eventId: {type: String},
+
+        user: {type: String},
+        eventsApp: {type: String},
+        membersApp: {type: String},
+        membersLabel: {type: String},
+        membersWorksheet: {type: String},
+        eventsLabel: {type: String},
+        eventsWorksheet: {type: String},
+        rsvpsWorksheet: {type: String},
+        
+        allRsvps: {type: Array, computed: 'grabWorksheet(eventData, rsvpsWorksheet)'},     
+        allEvents: {type: Array, computed: 'grabWorksheet(eventData, eventsWorksheet)'},     
+        allMembers: {type: Array, computed: 'grabWorksheet(memberData, membersWorksheet)'}     
+
+      },
+      
+      grabWorksheet: function(data, worksheet) {
+        return data[worksheet];
+      },
+      
+      ready: function() {
+      },
+      
+      computeRsvps: function(allRsvps, eventId) {
+        var ret = [];
+        for (var i = 0; i < allRsvps.length; i++) {
+          if (allRsvps[i].EventID == eventId) {
+            ret.push(allRsvps[i]);
+          }
+        }
+        return ret;
+      }
+         
+    });
+
+  </script>
+</dom-module>
