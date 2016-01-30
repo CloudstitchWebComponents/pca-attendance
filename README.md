@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # cloudstitch-spreadsheet
 
 An element providing a starting point for your own reusable Polymer elements.
@@ -70,3 +71,6 @@ git tag -a v0.0.2 -m "Release version 0.0.2"
 
 # push to GitHub
 git push origin master --tags  
+=======
+# pca-attendance
+>>>>>>> 218520b25eadb7ea57b86c0162aca0762838511a
